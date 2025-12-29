@@ -1,4 +1,5 @@
 import unittest
+from decimal import Decimal
 
 from banking.accounts.premium import PremiumAccount
 from banking.errors import InsufficientFundsError, InvalidOperationError
@@ -10,17 +11,17 @@ class TestPremiumAccount(unittest.TestCase):
         acc = PremiumAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=100,
-            overdraft_limit=50,
-            withdraw_fee=5,
+            balance=Decimal("100.00"),
+            overdraft_limit=Decimal("50.00"),
+            withdraw_fee=Decimal("5.00"),
         )
 
-        acc.withdraw(140)
+        acc.withdraw(Decimal("140.00"))
 
-        self.assertEqual(acc.balance, -45)
+        self.assertEqual(acc.balance, Decimal("-45.00"))
         info = acc.get_account_info()
-        self.assertEqual(info["overdraft_limit"], 50.0)
-        self.assertEqual(info["withdraw_fee"], 5.0)
+        self.assertEqual(info["overdraft_limit"], Decimal("50.00"))
+        self.assertEqual(info["withdraw_fee"], Decimal("5.00"))
         self.assertIn("overdraft=", str(acc))
         self.assertIn("max_withdraw_per_txn", info)
 
@@ -28,38 +29,38 @@ class TestPremiumAccount(unittest.TestCase):
         acc = PremiumAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=100,
-            max_withdraw_per_txn=30,
+            balance=Decimal("100.00"),
+            max_withdraw_per_txn=Decimal("30.00"),
         )
 
         with self.assertRaises(InvalidOperationError):
-            acc.withdraw(40)
+            acc.withdraw(Decimal("40.00"))
 
     def test_overdraft_limit_enforced(self):
         acc = PremiumAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=100,
-            overdraft_limit=10,
-            withdraw_fee=0,
+            balance=Decimal("100.00"),
+            overdraft_limit=Decimal("10.00"),
+            withdraw_fee=Decimal("0.00"),
         )
 
         with self.assertRaises(InsufficientFundsError):
-            acc.withdraw(120)
+            acc.withdraw(Decimal("120.00"))
 
     def test_withdraw_fee_applied(self):
         acc = PremiumAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=50,
-            overdraft_limit=0,
-            withdraw_fee=2,
-            max_withdraw_per_txn=100,
+            balance=Decimal("50.00"),
+            overdraft_limit=Decimal("0.00"),
+            withdraw_fee=Decimal("2.00"),
+            max_withdraw_per_txn=Decimal("100.00"),
         )
 
-        acc.withdraw(10)
+        acc.withdraw(Decimal("10.00"))
 
-        self.assertEqual(acc.balance, 38)
+        self.assertEqual(acc.balance, Decimal("38.00"))
 
 
 if __name__ == "__main__":

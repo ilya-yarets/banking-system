@@ -1,5 +1,6 @@
 import uuid
 from abc import ABC, abstractmethod
+from decimal import Decimal
 
 from banking.errors import (
     InvalidOperationError,
@@ -7,6 +8,7 @@ from banking.errors import (
     AccountFrozenError,
     AccountClosedError,
 )
+from banking.money import to_money, validate_amount
 from banking.types import AccountStatus, Currency, Owner
 
 
@@ -15,12 +17,12 @@ class AbstractAccount(ABC):
         self,
         owner: Owner,
         account_id: str,
-        balance: float = 0.0,
+        balance: Decimal = Decimal("0.00"),
         status: AccountStatus = AccountStatus.ACTIVE,
     ):
         self._id = account_id
         self._owner = owner
-        self._balance = float(balance)
+        self._balance = to_money(balance)
         self._status = status
 
     @property
@@ -36,14 +38,14 @@ class AbstractAccount(ABC):
         return self._status
 
     @property
-    def balance(self) -> float:
+    def balance(self) -> Decimal:
         return self._balance
 
     @abstractmethod
-    def deposit(self, amount: float) -> None: ...
+    def deposit(self, amount: Decimal) -> None: ...
 
     @abstractmethod
-    def withdraw(self, amount: float) -> None: ...
+    def withdraw(self, amount: Decimal) -> None: ...
 
     @abstractmethod
     def get_account_info(self) -> dict: ...
@@ -54,7 +56,7 @@ class BankAccount(AbstractAccount):
         self,
         owner: Owner,
         account_id: str | None = None,
-        balance: float = 0.0,
+        balance: Decimal = Decimal("0.00"),
         status: AccountStatus = AccountStatus.ACTIVE,
         currency: Currency = Currency.USD,
     ):
@@ -71,17 +73,17 @@ class BankAccount(AbstractAccount):
     def currency(self) -> Currency:
         return self._currency
 
-    def deposit(self, amount: float) -> None:
+    def deposit(self, amount: Decimal) -> None:
         self._check_can_operate()
-        self._validate_amount(amount)
-        self._balance += float(amount)
+        value = self._validate_amount(amount)
+        self._balance += value
 
-    def withdraw(self, amount: float) -> None:
+    def withdraw(self, amount: Decimal) -> None:
         self._check_can_operate()
-        self._validate_amount(amount)
-        if float(amount) > self._balance:
+        value = self._validate_amount(amount)
+        if value > self._balance:
             raise InsufficientFundsError("Not enough balance to withdraw this amount.")
-        self._balance -= float(amount)
+        self._balance -= value
 
     def get_account_info(self) -> dict:
         return {
@@ -115,15 +117,8 @@ class BankAccount(AbstractAccount):
             raise InvalidOperationError("Currency must be one of: RUB, USD, EUR, KZT, CNY.")
 
     @staticmethod
-    def _validate_amount(amount: float, allow_zero: bool = False) -> None:
-        try:
-            val = float(amount)
-        except (TypeError, ValueError):
-            raise InvalidOperationError("Amount must be a number.")
-        if val < 0:
-            raise InvalidOperationError("Amount cannot be negative.")
-        if not allow_zero and val == 0:
-            raise InvalidOperationError("Amount must be greater than zero.")
+    def _validate_amount(amount: Decimal, allow_zero: bool = False) -> Decimal:
+        return validate_amount(amount, allow_zero=allow_zero)
 
     def __str__(self) -> str:
         last4 = self._id[-4:] if self._id else "????"

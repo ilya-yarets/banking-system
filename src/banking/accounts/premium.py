@@ -1,4 +1,7 @@
 from banking.accounts.base import BankAccount
+from decimal import Decimal
+
+from banking.money import MONEY_QUANT
 from banking.errors import InsufficientFundsError, InvalidOperationError
 
 
@@ -6,41 +9,39 @@ class PremiumAccount(BankAccount):
     def __init__(
         self,
         *,
-        overdraft_limit: float = 0.0,
-        withdraw_fee: float = 0.0,
-        max_withdraw_per_txn: float = 10_000.0,
+        overdraft_limit: Decimal = Decimal("0.00"),
+        withdraw_fee: Decimal = Decimal("0.00"),
+        max_withdraw_per_txn: Decimal = Decimal("10000.00"),
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self._validate_amount(overdraft_limit, allow_zero=True)
-        self._validate_amount(withdraw_fee, allow_zero=True)
-        self._validate_amount(max_withdraw_per_txn, allow_zero=False)
-        self._overdraft_limit = float(overdraft_limit)
-        self._withdraw_fee = float(withdraw_fee)
-        self._max_withdraw_per_txn = float(max_withdraw_per_txn)
+        self._overdraft_limit = self._validate_amount(overdraft_limit, allow_zero=True)
+        self._withdraw_fee = self._validate_amount(withdraw_fee, allow_zero=True)
+        self._max_withdraw_per_txn = self._validate_amount(
+            max_withdraw_per_txn, allow_zero=False
+        )
 
     @property
-    def overdraft_limit(self) -> float:
+    def overdraft_limit(self) -> Decimal:
         return self._overdraft_limit
 
     @property
-    def withdraw_fee(self) -> float:
+    def withdraw_fee(self) -> Decimal:
         return self._withdraw_fee
 
     @property
-    def max_withdraw_per_txn(self) -> float:
+    def max_withdraw_per_txn(self) -> Decimal:
         return self._max_withdraw_per_txn
 
-    def withdraw(self, amount: float) -> None:
+    def withdraw(self, amount: Decimal) -> None:
         self._check_can_operate()
-        self._validate_amount(amount)
-        amount_val = float(amount)
+        amount_val = self._validate_amount(amount)
         if amount_val > self._max_withdraw_per_txn:
             raise InvalidOperationError("Withdraw amount exceeds max_withdraw_per_txn.")
-        total_debit = amount_val + self._withdraw_fee
+        total_debit = (amount_val + self._withdraw_fee).quantize(MONEY_QUANT)
         if self._balance - total_debit < -self._overdraft_limit:
             raise InsufficientFundsError("Overdraft limit exceeded.")
-        self._balance -= total_debit
+        self._balance = (self._balance - total_debit).quantize(MONEY_QUANT)
 
     def get_account_info(self) -> dict:
         info = super().get_account_info()

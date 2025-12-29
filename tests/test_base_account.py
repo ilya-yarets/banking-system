@@ -1,4 +1,5 @@
 import unittest
+from decimal import Decimal
 
 from banking.accounts.base import BankAccount
 from banking.errors import (
@@ -15,71 +16,71 @@ class TestBaseAccount(unittest.TestCase):
         acc = BankAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=100,
+            balance=Decimal("100.00"),
         )
 
-        acc.deposit(50)
+        acc.deposit(Decimal("50.00"))
 
-        self.assertEqual(acc.balance, 150)
+        self.assertEqual(acc.balance, Decimal("150.00"))
 
     def test_withdraw_active_account(self):
         acc = BankAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=100,
+            balance=Decimal("100.00"),
         )
 
-        acc.withdraw(40)
+        acc.withdraw(Decimal("40.00"))
 
-        self.assertEqual(acc.balance, 60)
+        self.assertEqual(acc.balance, Decimal("60.00"))
 
     def test_frozen_account_cannot_deposit(self):
         acc = BankAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=100,
+            balance=Decimal("100.00"),
             status=AccountStatus.FROZEN,
         )
 
         with self.assertRaises(AccountFrozenError):
-            acc.deposit(10)
+            acc.deposit(Decimal("10.00"))
 
     def test_closed_account_cannot_withdraw(self):
         acc = BankAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=100,
+            balance=Decimal("100.00"),
             status=AccountStatus.CLOSED,
         )
 
         with self.assertRaises(AccountClosedError):
-            acc.withdraw(10)
+            acc.withdraw(Decimal("10.00"))
 
     def test_negative_amount_is_invalid(self):
         acc = BankAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=100,
+            balance=Decimal("100.00"),
         )
 
         with self.assertRaises(InvalidOperationError):
-            acc.deposit(-5)
+            acc.deposit(Decimal("-5.00"))
 
     def test_insufficient_funds(self):
         acc = BankAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=10,
+            balance=Decimal("10.00"),
         )
 
         with self.assertRaises(InsufficientFundsError):
-            acc.withdraw(100)
+            acc.withdraw(Decimal("100.00"))
 
     def test_get_account_info(self):
         acc = BankAccount(
             owner=Owner("Ilya", doc_id="AB123"),
             currency=Currency.EUR,
-            balance=25,
+            balance=Decimal("25.00"),
         )
 
         info = acc.get_account_info()
@@ -88,12 +89,13 @@ class TestBaseAccount(unittest.TestCase):
         self.assertEqual(info["owner_name"], "Ilya")
         self.assertEqual(info["owner_doc_id"], "AB123")
         self.assertEqual(info["currency"], "EUR")
+        self.assertEqual(info["balance"], Decimal("25.00"))
 
     def test_str_contains_masked_id(self):
         acc = BankAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=10,
+            balance=Decimal("10.00"),
         )
 
         text = str(acc)
@@ -106,7 +108,7 @@ class TestBaseAccount(unittest.TestCase):
             BankAccount(
                 owner="Ilya",  # type: ignore[arg-type]
                 currency=Currency.USD,
-                balance=10,
+                balance=Decimal("10.00"),
             )
 
     def test_invalid_currency(self):
@@ -114,7 +116,7 @@ class TestBaseAccount(unittest.TestCase):
             BankAccount(
                 owner=Owner("Ilya"),
                 currency="USD",  # type: ignore[arg-type]
-                balance=10,
+                balance=Decimal("10.00"),
             )
 
 

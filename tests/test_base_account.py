@@ -1,21 +1,21 @@
 import unittest
 
-from src.accounts import BankAccount, Owner, Currency, AccountStatus
-from src.errors import (
+from banking.accounts.base import BankAccount
+from banking.errors import (
     AccountFrozenError,
     AccountClosedError,
     InvalidOperationError,
     InsufficientFundsError,
 )
+from banking.types import Owner, Currency, AccountStatus
 
 
-class MyTestCase(unittest.TestCase):
-
+class TestBaseAccount(unittest.TestCase):
     def test_deposit_active_account(self):
         acc = BankAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=100
+            balance=100,
         )
 
         acc.deposit(50)
@@ -26,7 +26,7 @@ class MyTestCase(unittest.TestCase):
         acc = BankAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=100
+            balance=100,
         )
 
         acc.withdraw(40)
@@ -39,7 +39,6 @@ class MyTestCase(unittest.TestCase):
             currency=Currency.USD,
             balance=100,
             status=AccountStatus.FROZEN,
-
         )
 
         with self.assertRaises(AccountFrozenError):
@@ -50,7 +49,7 @@ class MyTestCase(unittest.TestCase):
             owner=Owner("Ilya"),
             currency=Currency.USD,
             balance=100,
-            status=AccountStatus.CLOSED
+            status=AccountStatus.CLOSED,
         )
 
         with self.assertRaises(AccountClosedError):
@@ -60,7 +59,7 @@ class MyTestCase(unittest.TestCase):
         acc = BankAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=100
+            balance=100,
         )
 
         with self.assertRaises(InvalidOperationError):
@@ -70,12 +69,12 @@ class MyTestCase(unittest.TestCase):
         acc = BankAccount(
             owner=Owner("Ilya"),
             currency=Currency.USD,
-            balance=10
+            balance=10,
         )
 
         with self.assertRaises(InsufficientFundsError):
             acc.withdraw(100)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

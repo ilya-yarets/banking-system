@@ -1,31 +1,14 @@
 import uuid
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from enum import Enum
 
-from src.errors import (
+from banking.errors import (
     InvalidOperationError,
     InsufficientFundsError,
     AccountFrozenError,
     AccountClosedError,
 )
+from banking.types import AccountStatus, Currency, Owner
 
-class AccountStatus(str, Enum):
-    ACTIVE = "active"
-    FROZEN = "frozen"
-    CLOSED = "closed"
-
-class Currency(str, Enum):
-    RUB = "RUB"
-    USD = "USD"
-    EUR = "EUR"
-    KZT = "KZT"
-    CNY = "CNY"
-
-@dataclass(frozen=True)
-class Owner:
-    name: str
-    doc_id: str | None = None
 
 class AbstractAccount(ABC):
     def __init__(
@@ -65,25 +48,24 @@ class AbstractAccount(ABC):
     @abstractmethod
     def get_account_info(self) -> dict: ...
 
-class BankAccount(AbstractAccount):
 
+class BankAccount(AbstractAccount):
     def __init__(
-            self,
-            owner : Owner,
-            account_id: str | None = None,
-            balance  = 0.0,
-            status = AccountStatus.ACTIVE,
-            currency =  Currency.USD
+        self,
+        owner: Owner,
+        account_id: str | None = None,
+        balance: float = 0.0,
+        status: AccountStatus = AccountStatus.ACTIVE,
+        currency: Currency = Currency.USD,
     ):
         if account_id is None:
-            account_id = uuid.uuid4().hex[:8] #short uuid
+            account_id = uuid.uuid4().hex[:8]  # short uuid
         self._validate_owner(owner)
         self._validate_amount(balance, allow_zero=True)
         self._validate_currency(currency)
 
         super().__init__(owner=owner, account_id=account_id, balance=balance, status=status)
         self._currency = currency
-
 
     @property
     def currency(self) -> Currency:
@@ -112,7 +94,6 @@ class BankAccount(AbstractAccount):
             "currency": self._currency.value,
         }
 
-    ##internal fpr validation methods
     def _check_can_operate(self) -> None:
         if self._status == AccountStatus.FROZEN:
             raise AccountFrozenError("Account is frozen. Operations are not allowed.")
@@ -145,7 +126,6 @@ class BankAccount(AbstractAccount):
             raise InvalidOperationError("Amount must be greater than zero.")
 
     def __str__(self) -> str:
-        # "last 4 digits" — для UUID это последние 4 символа
         last4 = self._id[-4:] if self._id else "????"
         return (
             f"{self.__class__.__name__}("

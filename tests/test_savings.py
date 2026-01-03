@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from banking.accounts.savings import SavingsAccount
 from banking.errors import InvalidOperationError
+from banking.money import ZERO_MONEY
 from banking.types import Owner, Currency
 
 
@@ -30,7 +31,7 @@ class TestSavingsAccount(unittest.TestCase):
 
         self.assertEqual(acc.balance, Decimal("102.00"))
         info = acc.get_account_info()
-        self.assertEqual(info["min_balance"], Decimal("0.00"))
+        self.assertEqual(info["min_balance"], ZERO_MONEY)
         self.assertEqual(info["monthly_interest_rate"], Decimal("0.02"))
         self.assertIn("rate=", str(acc))
 

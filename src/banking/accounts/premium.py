@@ -1,7 +1,7 @@
 from banking.accounts.base import BankAccount
 from decimal import Decimal
 
-from banking.money import MONEY_QUANT
+from banking.money import DEFAULT_MAX_WITHDRAW, MONEY_QUANT, ZERO_MONEY
 from banking.errors import InsufficientFundsError, InvalidOperationError
 
 
@@ -9,9 +9,9 @@ class PremiumAccount(BankAccount):
     def __init__(
         self,
         *,
-        overdraft_limit: Decimal = Decimal("0.00"),
-        withdraw_fee: Decimal = Decimal("0.00"),
-        max_withdraw_per_txn: Decimal = Decimal("10000.00"),
+        overdraft_limit: Decimal = ZERO_MONEY,
+        withdraw_fee: Decimal = ZERO_MONEY,
+        max_withdraw_per_txn: Decimal = DEFAULT_MAX_WITHDRAW,
         **kwargs,
     ):
         super().__init__(**kwargs)

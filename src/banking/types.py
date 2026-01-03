@@ -16,6 +16,19 @@ class Currency(str, Enum):
     CNY = "CNY"
 
 
+class AccountType(str, Enum):
+    BASE = "base"
+    BANK = "bank"
+    SAVINGS = "savings"
+    PREMIUM = "premium"
+    INVESTMENT = "investment"
+
+
+class ClientStatus(str, Enum):
+    ACTIVE = "active"
+    BLOCKED = "blocked"
+
+
 @dataclass(frozen=True)
 class Owner:
     name: str

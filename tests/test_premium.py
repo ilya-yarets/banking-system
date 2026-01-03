@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from banking.accounts.premium import PremiumAccount
 from banking.errors import InsufficientFundsError, InvalidOperationError
+from banking.money import ZERO_MONEY
 from banking.types import Owner, Currency
 
 
@@ -42,7 +43,7 @@ class TestPremiumAccount(unittest.TestCase):
             currency=Currency.USD,
             balance=Decimal("100.00"),
             overdraft_limit=Decimal("10.00"),
-            withdraw_fee=Decimal("0.00"),
+            withdraw_fee=ZERO_MONEY,
         )
 
         with self.assertRaises(InsufficientFundsError):
@@ -53,7 +54,7 @@ class TestPremiumAccount(unittest.TestCase):
             owner=Owner("Ilya"),
             currency=Currency.USD,
             balance=Decimal("50.00"),
-            overdraft_limit=Decimal("0.00"),
+            overdraft_limit=ZERO_MONEY,
             withdraw_fee=Decimal("2.00"),
             max_withdraw_per_txn=Decimal("100.00"),
         )

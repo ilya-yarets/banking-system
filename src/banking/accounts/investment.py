@@ -1,7 +1,7 @@
 from decimal import Decimal, InvalidOperation
 
 from banking.accounts.base import BankAccount
-from banking.money import MONEY_QUANT
+from banking.money import MONEY_QUANT, ZERO_MONEY
 from banking.errors import InsufficientFundsError, InvalidOperationError
 
 
@@ -10,7 +10,7 @@ class InvestmentAccount(BankAccount):
         self,
         *,
         portfolios: dict | None = None,
-        expected_yearly_growth: Decimal = Decimal("0.00"),
+        expected_yearly_growth: Decimal = ZERO_MONEY,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -19,9 +19,9 @@ class InvestmentAccount(BankAccount):
             raise InvalidOperationError("Expected yearly growth cannot be negative.")
         self._expected_yearly_growth = growth_val
         self._portfolios = {
-            "stocks": Decimal("0.00"),
-            "bonds": Decimal("0.00"),
-            "etf": Decimal("0.00"),
+            "stocks": ZERO_MONEY,
+            "bonds": ZERO_MONEY,
+            "etf": ZERO_MONEY,
         }
         if portfolios:
             for asset_type, value in portfolios.items():
@@ -58,7 +58,7 @@ class InvestmentAccount(BankAccount):
 
     @property
     def portfolio_value(self) -> Decimal:
-        return sum(self._portfolios.values(), Decimal("0.00"))
+        return sum(self._portfolios.values(), ZERO_MONEY)
 
     def get_account_info(self) -> dict:
         info = super().get_account_info()

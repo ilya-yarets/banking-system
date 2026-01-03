@@ -8,7 +8,7 @@ from banking.errors import (
     AccountFrozenError,
     AccountClosedError,
 )
-from banking.money import to_money, validate_amount
+from banking.money import ZERO_MONEY, to_money, validate_amount
 from banking.types import AccountStatus, Currency, Owner
 
 
@@ -17,7 +17,7 @@ class AbstractAccount(ABC):
         self,
         owner: Owner,
         account_id: str,
-        balance: Decimal = Decimal("0.00"),
+        balance: Decimal = ZERO_MONEY,
         status: AccountStatus = AccountStatus.ACTIVE,
     ):
         self._id = account_id
@@ -56,7 +56,7 @@ class BankAccount(AbstractAccount):
         self,
         owner: Owner,
         account_id: str | None = None,
-        balance: Decimal = Decimal("0.00"),
+        balance: Decimal = ZERO_MONEY,
         status: AccountStatus = AccountStatus.ACTIVE,
         currency: Currency = Currency.USD,
     ):

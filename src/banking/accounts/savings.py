@@ -1,7 +1,7 @@
 from decimal import Decimal, InvalidOperation
 
 from banking.accounts.base import BankAccount
-from banking.money import MONEY_QUANT
+from banking.money import MONEY_QUANT, ZERO_MONEY
 from banking.errors import InsufficientFundsError, InvalidOperationError
 
 
@@ -9,8 +9,8 @@ class SavingsAccount(BankAccount):
     def __init__(
         self,
         *,
-        min_balance: Decimal = Decimal("0.00"),
-        monthly_interest_rate: Decimal = Decimal("0.00"),
+        min_balance: Decimal = ZERO_MONEY,
+        monthly_interest_rate: Decimal = ZERO_MONEY,
         **kwargs,
     ):
         super().__init__(**kwargs)
